@@ -1,0 +1,116 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> _Result;
+float2 _resolution;
+float3 _cameraPos;
+float4x4 _cameraMatrix;
+float _threshold;
+
+#define ITERATIONS 100
+
+float sdBox(float3 p, float3 b)
+{
+	float3 q = abs(p) - b;
+	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
+float sdSphere(float3 p, float r) {
+	return length(p) - r;
+}
+
+float sdCapsule(float3 p, float3 a, float3 b, float r)
+{
+	float3 pa = p - a, ba = b - a;
+	float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+	return length(pa - ba * h) - r;
+}
+
+float3 computeRay(uint2 pixel) {
+	float2 uv = pixel / _resolution;
+	uv -= 0.5;
+	uv.x *= _resolution.x / _resolution.y;
+	float3 dir = normalize(float3(uv, 1));
+	float4 ray = mul(_cameraMatrix, float4(dir, 0));
+	return ray.xyz;
+}
+
+float distanceField(float3 p) {
+
+	float3 spherePosition = float3(0, 0, 0);
+	float3 boxPosition = float3(-2, 1, 0);
+
+	// domain repetition
+	//float c = 4;
+	//float3 q = fmod(p + 0.5 * c, c) - 0.5 * c;
+
+	// domain distortion
+	// q.x += 0.1 * sin(q.y * 20);
+	// q.y += 0.1 * sin(q.z * 20);
+
+	/*return min(
+		sdBox(q - boxPosition, float3(1, 1, 1)),
+		sdSphere(q - spherePosition, 0.5)); */
+
+	//change shapes
+	float3 a = float3(4, 0, 0);
+	float3 b = float3(0, -5, 0);
+
+	float d = min(sdSphere(p, 1), sdCapsule(p, a, b, 0.4));
+
+	return d;
+}
+
+float3 normal(float3 p) {
+	float eps = 0.001;
+
+	float3 n = normalize(float3(
+		distanceField(p + float3(eps, 0, 0)) - distanceField(p - float3(eps, 0, 0)),
+		distanceField(p + float3(0, eps, 0)) - distanceField(p - float3(0, eps, 0)),
+		distanceField(p + float3(0, 0, eps)) - distanceField(p - float3(0, 0, eps))));
+
+	return n;
+}
+
+float3 shade(float3 p, float3 ray) {
+	// return float3(1, 0, 0);
+	// normal(p) * 0.5 + 0.5;
+
+	float3 n = normal(p);
+	float3 light = normalize(float3(1, -1, 1));
+	
+	float3 ambient = (0.1, 0.1, 0.2);
+	float diffuse = dot(n, light);
+	float specular = dot(n, ray);
+
+	float3 color = float3(0.1, 0.6, 0.3);
+	float3 specColor = float3(0.3, 0.4, 0.2);
+
+	return ambient + specColor * pow(specular, 6) + diffuse * color;
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+	float3 p = _cameraPos;
+	float3 ray = computeRay(id.xy);
+	bool hit = false;
+
+	for (int i = 0; i < ITERATIONS; i++) {
+		float d = distanceField(p);
+
+		if (d < _threshold) {
+			hit = true;
+			break;
+		}
+
+		p += ray * d;
+	}
+
+	float3 color = float3(0, 0, 0);
+	if (hit) {
+		color = shade(p, ray);
+	}
+
+	_Result[id.xy] = float4(color, 1);
+
+}
