@@ -55,9 +55,10 @@ float distanceField(float3 p) {
 	float3 a = float3(4, 0, 0);
 	float3 b = float3(0, -5, 0);
 
-	float d = min(sdSphere(p, 1), sdCapsule(p, a, b, 0.4));
+	//float d = min(sdSphere(p, 1), sdCapsule(p, a, b, 0.4));
+	float e = max(sdSphere(sin(p * 3) , 1), sdCapsule(p, a, b, 5));
 
-	return d;
+	return e;
 }
 
 float3 normal(float3 p) {
