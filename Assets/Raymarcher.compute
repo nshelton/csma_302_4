@@ -5,6 +5,7 @@ float2 _resolution;
 float3 _cameraPos;
 float4x4 _cameraMatrix;
 float _threshold;
+float3 _lightDir;
 
 #define ITERATIONS 100
 
@@ -36,6 +37,8 @@ float3 computeRay(uint2 pixel) {
 
 float distanceField(float3 p) {
 	
+	float groundDistance = sdBox(p, float3(1000, 0.1, 1000));
+
 	float3 spherePosition = float3(0, 0, 0);
 	float3 boxPosition = float3(-2, 1, 0);
 
@@ -52,10 +55,12 @@ float distanceField(float3 p) {
 		sdSphere(q - spherePosition, 0.5));
 		*/
 
-	float3 a = float3(4, 0, 0);
+	float3 a = float3(0, 5, 0);
 	float3 b = float3(0, -5, 0);
 
-	float d = min(sdSphere(p, 1), sdCapsule(p, a, b, 0.4));
+	float d = sdCapsule(p, a, b, 0.4);
+
+	d = min(groundDistance, d);
 
 	return d;
 }
@@ -71,22 +76,38 @@ float3 normal(float3 p) {
 	return n;
 }
 
+float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k)
+{
+	float res = 1.0;
+	for (float t = mint; t < maxt; )
+	{
+		float h = distanceField(ro + rd * t);
+		if (h < 0.001)
+			return 0.0;
+		res = min(res, k * h / t);
+		t += h;
+	}
+	return res;
+}
+
 float3 shade(float3 p, float3 ray) {
 	// return float3(1, 0, 0);
 	// normal(p) * 0.5 + 0.5;
 
 	float3 n = normal(p);
-	float3 light = normalize(float3(1, -1, 1));
-
 
 	float3 ambient = (0.1, 0.1, 0.2);
-	float diffuse = dot(n, light);
+	float diffuse = dot(n, _lightDir);
 	float specular = dot(n, ray);
 
 	float3 color = float3(0.1, 0.6, 0.3);
 	float3 specColor = float3(0.3, 0.4, 0.2);
 
-	return ambient + specColor * pow(specular, 6) + diffuse * color;
+	float shadow = softshadow(p, _lightDir, 0.01, 10, 10);
+
+	shadow = lerp(0.4, 1, shadow);
+
+	return (ambient + specColor * pow(specular, 6) + diffuse * color) * shadow;
 }
 
 [numthreads(8,8,1)]
@@ -111,6 +132,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	if (hit) {
 		color = shade(p, ray);
 	}
+	else {
+		float elevation = dot(ray, _lightDir) * 0.5 + 0.5;
+		float3 colorTop = float3(0.9, 0.9, 0.7);
+		float3 colorBottom = float3(0.4, 0.4, 0.6);
+		color = lerp(colorBottom, colorTop, elevation);
+	};
 
 	_Result[id.xy] = float4(color, 1);
 
