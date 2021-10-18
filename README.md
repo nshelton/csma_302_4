@@ -27,11 +27,11 @@ You will implement at least 3 materials, and have at least 5 procedural paramete
 
 ## Grading
 
-15 points for each of 3 different materials (5 each)
-50 points for each of 5 procedural parameters (10 each)
-20 points for creativity and complexity
-10 points for project organization / code comments
-5 points for camera controls ansd shadows (given in class)
+ - 15 points for each of 3 different materials (5 each)
+ - 50 points for each of 5 procedural parameters (10 each)
+ - 20 points for creativity and complexity
+ - 10 points for project organization / code comments
+ - 5 points for camera controls ansd shadows (given in class)
 
 
 ## Submitting 
