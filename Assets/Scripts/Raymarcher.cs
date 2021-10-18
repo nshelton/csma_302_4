@@ -9,17 +9,20 @@ public class Raymarcher : MonoBehaviour
 
     [SerializeField] float _threshold;
 
-    int _kernelID = -1;
+    Dictionary<string, int> _kernels;
+
+    [SerializeField] Light _light;
 
     void Update()
     {
-        if (_kernelID == -1)
+        if (_kernels == null)
         {
-            Debug.Log("reset KernelID");
-            _kernelID = _raymarchingShader.FindKernel("CSMain");
+            _kernels = new Dictionary<string, int>();
+
+            _kernels["CSMain"] = _raymarchingShader.FindKernel("CSMain");
             if (_render != null)
             {
-                _raymarchingShader.SetTexture(_kernelID, "_Result", _render);
+                _raymarchingShader.SetTexture(_kernels["CSMain"], "_Result", _render);
             }
         }
 
@@ -30,15 +33,17 @@ public class Raymarcher : MonoBehaviour
             _render = new RenderTexture(Screen.width, Screen.height, 0);
             _render.enableRandomWrite = true;
             _render.Create();
-            _raymarchingShader.SetTexture(_kernelID, "_Result", _render);
+            _raymarchingShader.SetTexture(_kernels["CSMain"], "_Result", _render);
             _raymarchingShader.SetVector("_resolution", new Vector2(_render.width, _render.height));
         }
 
         _raymarchingShader.SetVector("_cameraPos", transform.position);
+        _raymarchingShader.SetVector("_lightDir", _light.transform.forward);
+        
         _raymarchingShader.SetMatrix("_cameraMatrix", transform.localToWorldMatrix);
 
         _raymarchingShader.SetFloat("_threshold", _threshold);
-        _raymarchingShader.Dispatch(_kernelID, _render.width / 8, _render.height / 8, 1);
+        _raymarchingShader.Dispatch(_kernels["CSMain"], _render.width / 8, _render.height / 8, 1);
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
