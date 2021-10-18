@@ -6,18 +6,27 @@ public class rayMarcher : MonoBehaviour
 {
     [SerializeField] ComputeShader _raymarchingShader;
     RenderTexture _render;
+
     [SerializeField] float _threshold;
 
-    int _kernelID = -1;
+    Dictionary<string, int> _kernels;
+
+    [SerializeField] Light _light;
+
+    [SerializeField, Range(2, 6)] float _height;
+    [SerializeField, Range(5, 10)] float _width;
+    [SerializeField, Range(5, 10)] float _depth;
+
     void Update()
     {
-        if (_kernelID == -1)
+        if (_kernels == null)
         {
-            Debug.Log("reset KernelID");
-            _kernelID = _raymarchingShader.FindKernel("CSMain");
+            _kernels = new Dictionary<string, int>();
+
+            _kernels["CSMain"] = _raymarchingShader.FindKernel("CSMain");
             if (_render != null)
             {
-                _raymarchingShader.SetTexture(_kernelID, "_Result", _render);
+                _raymarchingShader.SetTexture(_kernels["CSMain"], "_Result", _render);
             }
         }
 
@@ -28,16 +37,24 @@ public class rayMarcher : MonoBehaviour
             _render = new RenderTexture(Screen.width, Screen.height, 0);
             _render.enableRandomWrite = true;
             _render.Create();
-            _raymarchingShader.SetTexture(_kernelID, "_Result", _render);
+            _raymarchingShader.SetTexture(_kernels["CSMain"], "_Result", _render);
             _raymarchingShader.SetVector("_resolution", new Vector2(_render.width, _render.height));
         }
 
         _raymarchingShader.SetVector("_cameraPos", transform.position);
+        _raymarchingShader.SetVector("_lightDir", _light.transform.forward);
+
         _raymarchingShader.SetMatrix("_cameraMatrix", transform.localToWorldMatrix);
 
         _raymarchingShader.SetFloat("_threshold", _threshold);
-        _raymarchingShader.Dispatch(_kernelID, _render.width / 8, _render.height / 8, 1);
+        _raymarchingShader.SetFloat("_threshold", _threshold);
+        _raymarchingShader.SetFloat("_height", _height);
+        _raymarchingShader.SetFloat("_width", _width);
+        _raymarchingShader.SetFloat("_depth", _depth);
+
+        _raymarchingShader.Dispatch(_kernels["CSMain"], _render.width / 8, _render.height / 8, 1);
     }
+
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         Graphics.Blit(_render, destination);

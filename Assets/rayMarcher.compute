@@ -5,8 +5,13 @@ float2 _resolution;
 float3 _cameraPos;
 float4x4 _cameraMatrix;
 float _threshold;
+float3 _lightDir;
 
-#define ITERATIONS 100
+float _height;
+float _width;
+float _depth;
+
+#define ITERATIONS 500
 
 float sdBox(float3 p, float3 b)
 {
@@ -34,60 +39,99 @@ float3 computeRay(uint2 pixel) {
 	return ray.xyz;
 }
 
-float distanceField(float3 p) {
+float2 distanceField(float3 p) {
 
-	float3 spherePosition = float3(0, 0, 0);
-	float3 boxPosition = float3(-2, 1, 0);
+	float ground = sdBox(p, float3(1000, 0.1, 1000));
 
-	// domain repetition
-	//float c = 4;
-	//float3 q = fmod(p + 0.5 * c, c) - 0.5 * c;
+	float width = _width;
+	float height = _height;
+	float depth = _depth;
+	float wallThickness = 0.05;
 
-	// domain distortion
-	// q.x += 0.1 * sin(q.y * 20);
-	// q.y += 0.1 * sin(q.z * 20);
+	//main house body
+	float wall = sdBox(p - float3(0, height, depth / 2), float3(width / 2 + wallThickness, height, wallThickness));
+	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width / 2 + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(width / 2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+	wall = min(wall, sdBox(p - float3(-width / 2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
 
-	/*return min(
-		sdBox(q - boxPosition, float3(1, 1, 1)),
-		sdSphere(q - spherePosition, 0.5)); */
+	//windows
+	wall = max(wall, -sdBox(p - float3(-width / 2, height, depth / 4), float3(wallThickness * 2, height / 2, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(-width / 2, height, -depth / 4), float3(wallThickness * 2, height / 2, depth / 8)));
 
-	//change shapes
-	float3 a = float3(4, 0, 0);
-	float3 b = float3(0, -5, 0);
+	//window patch
+	wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
 
-	//float d = min(sdSphere(p, 1), sdCapsule(p, a, b, 0.4));
-	float e = max(sdSphere(sin(p * 3) , 1), sdCapsule(p, a, b, 5));
+	float d = min(ground, wall);
 
-	return e;
+	int material = -1;
+
+	if (d == ground) {
+		material = 0;
+	}
+	else if (d == wall) {
+		material = 1;
+	}
+
+	return float2(d, material);
 }
 
 float3 normal(float3 p) {
 	float eps = 0.001;
 
 	float3 n = normalize(float3(
-		distanceField(p + float3(eps, 0, 0)) - distanceField(p - float3(eps, 0, 0)),
-		distanceField(p + float3(0, eps, 0)) - distanceField(p - float3(0, eps, 0)),
-		distanceField(p + float3(0, 0, eps)) - distanceField(p - float3(0, 0, eps))));
+		distanceField(p + float3(eps, 0, 0)).x - distanceField(p - float3(eps, 0, 0)).x,
+		distanceField(p + float3(0, eps, 0)).x - distanceField(p - float3(0, eps, 0)).x,
+		distanceField(p + float3(0, 0, eps)).x - distanceField(p - float3(0, 0, eps)).x));
 
 	return n;
 }
 
-float3 shade(float3 p, float3 ray) {
+float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k)
+{
+	float res = 1.0;
+	for (float t = mint; t < maxt; )
+	{
+		float h = distanceField(ro + rd * t);
+		if (h < 0.001)
+			return 0.0;
+		res = min(res, k * h / t);
+		t += h;
+	}
+	return res;
+}
+
+float3 colorForMaterial(int mat) {
+	if (mat == 1) {
+		return float3(0.6, 0.4, 0.2);
+	}
+	else if (mat == 0) {
+		return float3(0.4, 0.8, 0.5);
+	}
+
+	return float3(1, 0, 1);
+}
+
+float3 shade(float3 p, float3 ray, int material) {
 	// return float3(1, 0, 0);
 	// normal(p) * 0.5 + 0.5;
 
 	float3 n = normal(p);
-	float3 light = normalize(float3(1, -1, 1));
-	
-	float3 ambient = (0.1, 0.1, 0.2);
-	float diffuse = dot(n, light);
+
+	float3 ambient = float3(0.1, 0.1, 0.2);
+	float diffuse = dot(n, _lightDir);
 	float specular = dot(n, ray);
 
-	float3 color = float3(0.1, 0.6, 0.3);
+	float3 color = colorForMaterial(material);
 	float3 specColor = float3(0.3, 0.4, 0.2);
 
-	return ambient + specColor * pow(specular, 6) + diffuse * color;
+	float shadow = softshadow(p, _lightDir, 0.01, 10, 10);
+
+	shadow = lerp(0.4, 1, shadow);
+
+	return (ambient + specColor * pow(specular, 6) + diffuse * color) * shadow;
 }
+
+
 
 [numthreads(8, 8, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
@@ -95,22 +139,31 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float3 p = _cameraPos;
 	float3 ray = computeRay(id.xy);
 	bool hit = false;
+	int material = 0;
 
 	for (int i = 0; i < ITERATIONS; i++) {
-		float d = distanceField(p);
+		float2 distanceMaterial = distanceField(p);
 
-		if (d < _threshold) {
+		if (distanceMaterial.x < _threshold) {
+			material = distanceMaterial.y;
 			hit = true;
 			break;
 		}
 
-		p += ray * d;
+		p += ray * distanceMaterial.x;
 	}
 
 	float3 color = float3(0, 0, 0);
+
 	if (hit) {
-		color = shade(p, ray);
+		color = shade(p, ray, material);
 	}
+	else {
+		float elevation = dot(ray, _lightDir) * 0.5 + 0.5;
+		float3 colorTop = float3(0.9, 0.9, 0.7);
+		float3 colorBottom = float3(0.4, 0.4, 0.6);
+		color = lerp(colorBottom, colorTop, elevation);
+	};
 
 	_Result[id.xy] = float4(color, 1);
 
