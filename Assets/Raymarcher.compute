@@ -48,16 +48,59 @@ float2 distanceField(float3 p) {
 	float depth = _depth;
 	float wallThickness = 0.05;
 
-	float wall =     sdBox(p - float3(0, height,  depth / 2), float3(width / 2 + wallThickness, height, wallThickness));
-	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width / 2 + wallThickness, height, wallThickness)));
-	wall = min(wall, sdBox(p - float3(  width/2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
-	wall = min(wall, sdBox(p - float3(-width / 2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
 
-	wall = max(wall, -sdBox(p - float3(- width/2, height, depth/4), float3(wallThickness*2, height / 2, depth / 8 )));
-	wall = max(wall, -sdBox(p - float3(- width/2, height, -depth/4), float3(wallThickness*2, height / 2, depth / 8)));
+	//left building
+	float wall =     sdBox(p - float3(-5, height,  depth / 2), float3(width + wallThickness, height, wallThickness));
+	wall = min(wall, sdBox(p - float3(-5, height, -depth / 2), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(width/2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+	wall = min(wall, sdBox(p - float3(-width*1.5, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+	
+	//center building
 
-	wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	//left wall
+	wall = min(wall, sdBox(p - float3(0, height * 2, -5 + depth / 2), float3(width / 3 + wallThickness, height * 2, wallThickness)));
+	//right wall
+	wall = min(wall, sdBox(p - float3(0, height * 2, -20 + -depth / 2), float3(width / 3 + wallThickness, height * 2, wallThickness)));
+	//back wall
+	wall = min(wall, sdBox(p - float3(width / 3, height * 2, -12.5), float3(wallThickness, height * 2, depth * 2 + wallThickness)));
+	//front wall
+	wall = min(wall, sdBox(p - float3(-width / 3, height * 2, -12.5), float3(wallThickness, height * 2, depth * 2 + wallThickness)));
+	
 
+
+
+
+	//right building
+
+	//left wall
+	wall = min(wall, sdBox(p - float3(-5, height, -depth * 4.5), float3(width + wallThickness, height, wallThickness)));
+	//right wall
+	wall = min(wall, sdBox(p - float3(-5, height, -depth * 5.5), float3(width + wallThickness, height, wallThickness)));
+	//back wall
+	wall = min(wall, sdBox(p - float3(width/2, height, -25), float3(wallThickness, height, depth / 2 + wallThickness)));
+	//front wall
+	wall = min(wall, sdBox(p - float3(-width*1.5, height, -25), float3(wallThickness, height, depth / 2 + wallThickness)));
+
+
+
+
+
+
+	//left windows
+	wall = max(wall, -sdBox(p - float3(5 - width /5, height, depth), float3(wallThickness*1000, height / 2, depth/ 2)));
+	
+	wall = max(wall, -sdBox(p - float3(- width/2 + 5, height, -depth/1.5), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, -depth/4), float3(wallThickness*10, height / 2, depth)));	
+	//right windows
+	
+
+	//wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	
+	
 
 
 	float d = min(ground, wall);
