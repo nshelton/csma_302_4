@@ -55,7 +55,7 @@ float2 distanceField(float3 p) {
 	wall = min(wall, sdBox(p - float3(width/2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
 	wall = min(wall, sdBox(p - float3(-width*1.5, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
 	
-	//center building
+	//center building(back)
 
 	//left wall
 	wall = min(wall, sdBox(p - float3(0, height * 2, -5 + depth / 2), float3(width / 3 + wallThickness, height * 2, wallThickness)));
