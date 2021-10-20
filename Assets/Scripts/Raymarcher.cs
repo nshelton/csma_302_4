@@ -13,6 +13,10 @@ public class Raymarcher : MonoBehaviour
 
     [SerializeField] Light _light;
 
+    [SerializeField, Range(2, 6)] float _height;
+    [SerializeField, Range(5, 10)] float _width;
+    [SerializeField, Range(5, 10)] float _depth;
+
     void Update()
     {
         if (_kernels == null)
@@ -43,6 +47,10 @@ public class Raymarcher : MonoBehaviour
         _raymarchingShader.SetMatrix("_cameraMatrix", transform.localToWorldMatrix);
 
         _raymarchingShader.SetFloat("_threshold", _threshold);
+        _raymarchingShader.SetFloat("_height", _height);
+        _raymarchingShader.SetFloat("_width", _width);
+        _raymarchingShader.SetFloat("_depth", _depth);
+
         _raymarchingShader.Dispatch(_kernels["CSMain"], _render.width / 8, _render.height / 8, 1);
     }
 
