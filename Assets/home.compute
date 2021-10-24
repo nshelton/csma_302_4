@@ -11,10 +11,29 @@ float _height;
 float _width;
 float _depth;
 
+float _tilt;
+float _roofHeight;
+float _centerRoof;
+
 #define ITERATIONS 500
 
-float sdBox(float3 p, float3 b)
-{
+float3x3 AngleAxis3x3(float angle, float3 axis){
+	float c, s;
+	sincos(angle, s, c);
+
+	float t = 1 - c;
+	float x = axis.x;
+	float y = axis.y;
+	float z = axis.z;
+
+	return float3x3(
+		t * x * x + c, t * x * y - s * z, t * x * z + s * y,
+		t * x * y + s * z, t * y * y + c, t * y * z - s * x,
+		t * x * z - s * y, t * y * z + s * x, t * z * z + c
+		);
+}
+
+float sdBox(float3 p, float3 b){
 	float3 q = abs(p) - b;
 	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
@@ -23,8 +42,7 @@ float sdSphere(float3 p, float r) {
 	return length(p) - r;
 }
 
-float sdCapsule(float3 p, float3 a, float3 b, float r)
-{
+float sdCapsule(float3 p, float3 a, float3 b, float r){
 	float3 pa = p - a, ba = b - a;
 	float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
 	return length(pa - ba * h) - r;
@@ -40,7 +58,6 @@ float3 computeRay(uint2 pixel) {
 }
 
 float2 distanceField(float3 p) {
-
 	float ground = sdBox(p, float3(1000, 0.1, 1000));
 
 	float width = _width;
@@ -51,8 +68,18 @@ float2 distanceField(float3 p) {
 	//main house body 1
 	float wall = sdBox(p - float3(0, height, depth / 2), float3(width / 2 + wallThickness, height, wallThickness));
 	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width / 2 + wallThickness, height, wallThickness)));
-	//wall = min(wall, sdBox(p - float3(width / 2, height, 0), float3(wallThickness, height, (depth / 2 + wallThickness))));
 	wall = min(wall, sdBox(p - float3(-width / 2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+
+	//roof of main house body 1
+	float tilt = _tilt;
+	float3 pTilt = mul(AngleAxis3x3(tilt, float3(0, 0, 1)), p);
+	float3 offset = float3(0, height * 2, 0);
+
+	float roofHieght = _roofHeight;
+	float centerRoof = _centerRoof;
+	
+	offset = mul(AngleAxis3x3(tilt, float3(centerRoof, roofHieght, 1)), offset);
+	wall = min(wall, sdBox(pTilt - offset, float3(width / 2 + wallThickness, wallThickness / 2 * 2, depth / 2 + wallThickness)));
 
 	//main house body 2
 	wall = min(wall, sdBox(p - float3(width, height, depth / 2), float3(width / 2 + wallThickness, height + 0.8, wallThickness)));
@@ -61,19 +88,17 @@ float2 distanceField(float3 p) {
 	wall = min(wall, sdBox(p - float3(width / 2 + width, height, 0), float3(wallThickness, height + 0.8, depth / 2 + wallThickness)));
 
 	//roof of main house body 2
-	//wall = min(wall, sdBox(p - float3(width  + width, height, depth / 2), float3(width / 2 + wallThickness, allThickness * 2, depth + wallThickness)));
-	wall = min(wall, sdBox(p - float3(width, height * 2 + 0.8, 0), float3(width / 2 + wallThickness, wallThickness * 2, depth / 2 + wallThickness)));
+	wall = min(wall, sdBox(p - float3(width, height * 2 + 0.8, 0), float3(width / 2 + wallThickness, wallThickness/2 * 2, depth / 2 + wallThickness)));
 	
-	//porch
+	//porch area
 	wall = min(wall, sdBox(p - float3(width, height,  depth / 4 - depth), float3(width / 2 + wallThickness, wallThickness * 2, depth/4)));
 
-	//windows
-	//wall = max(wall, -sdBox(p - float3(-width / 2, height, depth / 4), float3(wallThickness * 2, height / 20, depth / 8)));
-	//wall = max(wall, -sdBox(p - float3(-width / 2, height, -depth / 4), float3(wallThickness * 2, height / 20, depth / 8)));
-
 	//door
-	wall = max(wall, -sdBox(p - float3(0, height/2 , depth / 2), float3(0.2 , 0.2 + height/ 2, wallThickness * 2)));
+	wall = max(wall, -sdBox(p - float3(width, height/2 , depth / 2), float3(0.2 , 0.2 + height/ 2, wallThickness * 2)));
 
+	//garage
+	wall = max(wall, -sdBox(p - float3(0, height / 2, depth / 2), float3(width / 2, 0.2 + height / 2, wallThickness * 2)));
+	
 	float d = min(ground, wall);
 
 	int material = -1;
@@ -88,6 +113,7 @@ float2 distanceField(float3 p) {
 	return float2(d, material);
 }
 
+//material 1
 float3 normal(float3 p) {
 	float eps = 0.001;
 
@@ -99,9 +125,10 @@ float3 normal(float3 p) {
 	return n;
 }
 
-float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k)
-{
+//material 2
+float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k) {
 	float res = 1.0;
+
 	for (float t = mint; t < maxt; )
 	{
 		float h = distanceField(ro + rd * t);
@@ -113,6 +140,7 @@ float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k)
 	return res;
 }
 
+//material 3
 float3 colorForMaterial(int mat) {
 	if (mat == 1) {
 		return float3(0.6, 0.4, 0.2);
@@ -124,10 +152,20 @@ float3 colorForMaterial(int mat) {
 	return float3(1, 0, 1);
 }
 
-float3 shade(float3 p, float3 ray, int material) {
-	// return float3(1, 0, 0);
-	// normal(p) * 0.5 + 0.5;
+//material 4
+float3 extra(int test) {
+	if (test == 1) {
+		return float3(0.1, 0.0, 0.7);
+	}
+	else if (test == 0) {
+		return float3(0.7, 0.1, 0.0);
+	}
 
+	return float3(0, 1, 0);
+}
+
+//material 5
+float3 shade(float3 p, float3 ray, int material) {
 	float3 n = normal(p);
 
 	float3 ambient = float3(0.1, 0.1, 0.2);
@@ -135,7 +173,9 @@ float3 shade(float3 p, float3 ray, int material) {
 	float specular = dot(n, ray);
 
 	float3 color = colorForMaterial(material);
-	float3 specColor = float3(0.3, 0.4, 0.2);
+
+	//float3 specColor = float3(0.3, 0.4, 0.2);
+	float3 specColor = extra(material);
 
 	float shadow = softshadow(p, _lightDir, 0.01, 10, 10);
 
@@ -144,11 +184,8 @@ float3 shade(float3 p, float3 ray, int material) {
 	return (ambient + specColor * pow(specular, 6) + diffuse * color) * shadow;
 }
 
-
-
 [numthreads(8, 8, 1)]
-void CSMain(uint3 id : SV_DispatchThreadID)
-{
+void CSMain(uint3 id : SV_DispatchThreadID) {
 	float3 p = _cameraPos;
 	float3 ray = computeRay(id.xy);
 	bool hit = false;
@@ -179,5 +216,4 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	};
 
 	_Result[id.xy] = float4(color, 1);
-
 }

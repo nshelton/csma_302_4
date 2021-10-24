@@ -17,6 +17,10 @@ public class home : MonoBehaviour
     [SerializeField, Range(2, 10)] float _width;
     [SerializeField, Range(1, 10)] float _depth;
 
+    [SerializeField] float _tilt;
+    [SerializeField] float _roofHeight;
+    [SerializeField] float _centerRoof;
+
     void Update()
     {
         if (_kernels == null)
@@ -51,6 +55,11 @@ public class home : MonoBehaviour
         _raymarchingShader.SetFloat("_height", _height);
         _raymarchingShader.SetFloat("_width", _width);
         _raymarchingShader.SetFloat("_depth", _depth);
+
+        //added parameters
+        _raymarchingShader.SetFloat("_tilt", _tilt);
+        _raymarchingShader.SetFloat("_roofHeight", _roofHeight);
+        _raymarchingShader.SetFloat("_centerRoof", _centerRoof);
 
         _raymarchingShader.Dispatch(_kernels["CSMain"], _render.width / 8, _render.height / 8, 1);
     }

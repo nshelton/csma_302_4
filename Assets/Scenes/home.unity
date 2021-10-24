@@ -267,6 +267,9 @@ MonoBehaviour:
   _height: 1
   _width: 2
   _depth: 3
+  _tilt: -0.2
+  _roofHeight: 2.6
+  _centerRoof: 0.29
 --- !u!1 &1816728496
 GameObject:
   m_ObjectHideFlags: 0
