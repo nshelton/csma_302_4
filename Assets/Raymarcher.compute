@@ -13,6 +13,7 @@ float _depth;
 float _smallDepth;
 float _windowHeight;
 float _windowWidth;
+float _smallwindowHeight;
 
 #define ITERATIONS 500
 
@@ -69,6 +70,8 @@ float2 distanceField(float3 p) {
 	float smallDepth = _smallDepth;
 	float windowHeight = _windowHeight;
 	float windowWidth = _windowWidth;
+	float smallwindowHeight = _smallwindowHeight;
+
 
 	float wallThickness = 0.05;
 
@@ -183,36 +186,36 @@ float2 distanceField(float3 p) {
 	//left windows
 	
 	//doorway
-	wall = max(wall, -sdBox(p - float3(- width/2 + 5, height, -depth/1.5), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 5, smallwindowHeight, -depth/1.5), float3(wallThickness*10, height / 2, depth)));
 	
-	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 1, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 1, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 3, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 5, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 7, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
 
-	wall = max(wall, -sdBox(p - float3(width/2 - 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 3, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 5, height, depth/4), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 7, height, depth/4), float3(wallThickness*10, height / 3, depth)));	
+	wall = max(wall, -sdBox(p - float3(width/2 - 1, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 1, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 3, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 5, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 7, smallwindowHeight, depth/4), float3(wallThickness*10, smallwindowHeight / 3, depth)));	
 	//right windows
 	
 	//doorway
 	
-	wall = max(wall, -sdBox(p - float3(- width/2 + 5, height, -depth * 4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 5, smallwindowHeight, -depth * 4), float3(wallThickness*10, smallwindowHeight / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 1, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 1, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 3, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 5, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 7, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
 
-	wall = max(wall, -sdBox(p - float3(width/2 - 5, height, -depth * 4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 - 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 3, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 5, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
-	wall = max(wall, -sdBox(p - float3(width/2 + 7, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));		
+	wall = max(wall, -sdBox(p - float3(width/2 - 5, smallwindowHeight, -depth * 4), float3(wallThickness*10, smallwindowHeight / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 - 1, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 1, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 3, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 5, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 7, smallwindowHeight, -depth * 5), float3(wallThickness*10, smallwindowHeight / 3, depth)));		
 
 	//wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
 	

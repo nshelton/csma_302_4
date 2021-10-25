@@ -18,6 +18,7 @@ public class Raymarcher : MonoBehaviour
     [SerializeField, Range(5, 10)] float _depth;
     [SerializeField, Range(5, 10)] float _smallDepth;
     [SerializeField, Range(2, 6)] float _windowHeight;
+    [SerializeField, Range(2, 6)] float _smallwindowHeight;
     [SerializeField, Range(0, 2)] float _windowWidth;
 
 
@@ -59,6 +60,7 @@ public class Raymarcher : MonoBehaviour
         _raymarchingShader.SetFloat("_smallDepth", _smallDepth);
         _raymarchingShader.SetFloat("_windowHeight", _windowHeight);
         _raymarchingShader.SetFloat("_windowWidth", _windowWidth);
+        _raymarchingShader.SetFloat("_smallwindowHeight", _smallwindowHeight);
 
 
         _raymarchingShader.Dispatch(_kernels["CSMain"], _render.width / 8, _render.height / 8, 1);
