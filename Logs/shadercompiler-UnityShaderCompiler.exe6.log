@@ -1,1 +1,79 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.3.16f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.3.16f1/Editor/Data/PlaybackEngines'
+Cmd: initializeCompiler
+
+Cmd: compileComputeKernel
+  insize=7786 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(176): implicit truncation of vector type
+ ok=1 outsize=72838
+
+Cmd: compileComputeKernel
+  insize=7924 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(178): implicit truncation of vector type
+ ok=1 outsize=75270
+
+Cmd: compileComputeKernel
+  insize=7925 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(178): implicit truncation of vector type
+ ok=1 outsize=75334
+
+Cmd: compileComputeKernel
+  insize=7925 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(178): implicit truncation of vector type
+ ok=1 outsize=75354
+
+Cmd: compileComputeKernel
+  insize=8317 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(189): implicit truncation of vector type
+ ok=1 outsize=77134
+
+Cmd: compileComputeKernel
+  insize=8292 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(189): implicit truncation of vector type
+ ok=1 outsize=79206
+
+Cmd: compileComputeKernel
+  insize=8295 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(189): implicit truncation of vector type
+ ok=1 outsize=79298
+
+Cmd: compileComputeKernel
+  insize=8301 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(189): implicit truncation of vector type
+ ok=1 outsize=79330
+
+Cmd: compileComputeKernel
+  insize=8307 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(189): implicit truncation of vector type
+ ok=1 outsize=79414
+
+Cmd: compileComputeKernel
+  insize=8664 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(199): implicit truncation of vector type
+ ok=1 outsize=83450
+
+Cmd: compileComputeKernel
+  insize=8670 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(199): implicit truncation of vector type
+ ok=1 outsize=83450
+
+Cmd: compileComputeKernel
+  insize=9563 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(224): implicit truncation of vector type
+ ok=1 outsize=91418
+
+Cmd: compileComputeKernel
+  insize=9567 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(224): implicit truncation of vector type
+ ok=1 outsize=91418
+
+Cmd: compileComputeKernel
+  insize=10965 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(238): implicit truncation of vector type
+ ok=1 outsize=120786
+
+Cmd: compileComputeKernel
+  insize=11524 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(246): implicit truncation of vector type
+ ok=1 outsize=130418
+
+Cmd: compileComputeKernel
+  insize=11959 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(250): implicit truncation of vector type
+ ok=1 outsize=140338
+
+Cmd: compileComputeKernel
+  insize=12339 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(254): implicit truncation of vector type
+ ok=1 outsize=147646
+
+Cmd: compileComputeKernel
+  insize=12488 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 2 plat 4 at Raymarcher.compute(226): 'min': no matching 3 parameter intrinsic function; Possible intrinsic functions are: min(float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint, float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint)
+ ok=0 outsize=0
+
+Cmd: compileComputeKernel
+  insize=12518 file=C:/Users/mjsar/Desktop/AdvancedProgramming/csma_302_4/Assets/Raymarcher.compute kernel=CSMain cachingPP=1 ppOnly=0 stripLineD=0 buildPlatform=19 km=<UNITY_VERSION=202039> pKW=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR uKW=SHADER_STAGE_COMPUTE platform=d3d11 flags=0  error: 1 plat 4 at Raymarcher.compute(257): implicit truncation of vector type
+ ok=1 outsize=147718
+
