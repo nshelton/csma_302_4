@@ -1,4 +1,5 @@
 ﻿#pragma kernel CSMain
+#include "UnityCG.cginc"
 
 RWTexture2D<float4> _Result;
 float2 _resolution;
@@ -10,6 +11,12 @@ float3 _lightDir;
 float _height;
 float _width;
 float _depth;
+
+float3 _wallColor;
+float3 _groundColor;
+float _windowWidth;
+float _rotationAmount;
+int _floorCount;
 
 #define ITERATIONS 500 // lower this if it's slow
 
@@ -56,18 +63,32 @@ float3 computeRay(uint2 pixel) {
 	return ray.xyz;
 }
 
+float random(float2 uv)
+{
+	return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
 float generateFloor(float3 p, float width, float depth) {
 	float wallThickness = 0.05;
 	float d = sdBox(p, float3(width, _height, depth));
 
 	d = max(d, -sdBox(p, float3(width - wallThickness, _height - wallThickness, depth - wallThickness))); // inside
-	d = max(d, -sdBox(p - float3(width, 0, 0), float3(1, 1, 1))); // window
+	d = max(d, -sdBox(p - float3(width, 0, 1), float3(1, 1, _windowWidth))); // window
+	d = max(d, -sdBox(p - float3(1,	1, 1), float3(_windowWidth, 1, 9))); // window
 	return d;
 }
 
 float2 distanceField(float3 p) {
 	
-	float ground = sdBox(p, float3(1000, 0.1, 1000));
+	float  ground = sdBox(p, float3(1000, 0.1, 1000));
+	p.x += 25;
+	p.y -= 5;
+	float treetrunk = min(ground, sdBox(p, float3(1, 5, 1)));
+	p.y -= 5;
+	float treeleaves = min(ground, sdSphere(p, float3(5, 5, 5)));
+	p.x -= 25;
+	p.y += 5;
+	p.y += 5;
 
 	float width = _width;
 	float height = _height;
@@ -75,21 +96,24 @@ float2 distanceField(float3 p) {
 	float wallThickness = 0.05;
 	
 	float wall = 1e10;
-	float floorCount = 8;
+
+	float speed = 40;
 
 	p.y -= height;
 
-	for (int i = 0; i < floorCount; i ++) {
-		float w = _width + (sin(i)*0.5 + 0.5)*_width;
+	for (int i = 0; i < _floorCount; i ++) {
+
+		float w = _width + (sin(i)*0.5 + 1)*_width;
 		float d = _depth + sin(i*10);
 
 		wall = min(wall, generateFloor(p, w, d));
-		p.y -= height * 2 + 1;
-		p = mul(AngleAxis3x3(123.45, float3(0, 1, 0)), p);
+		p.y -= (height * 2);
+		p = mul(AngleAxis3x3(_rotationAmount, float3(0, 1, 0)), p);
 	}
-	
 
 	float d = min(ground, wall);
+	d = min(d, treetrunk);
+	d = min(d, treeleaves);
 
 	int material = -1;
 
@@ -98,6 +122,12 @@ float2 distanceField(float3 p) {
 	}
 	else if (d == wall) {
 		material = 1;
+	}
+	else if (d == treetrunk) {
+		material = 2;
+	}
+	else if (d == treeleaves) {
+		material = 3;
 	}
 
 	return float2(d, material);
@@ -129,13 +159,14 @@ float softshadow(in float3 ro, in float3 rd, float mint, float maxt, float k)
 }
 
 float3 colorForMaterial(int mat) {
-	if (mat == 1) {
-		return float3(0.6, 0.4, 0.2);
-	}
-	else if (mat == 0) {
-		return float3(0.4, 0.8, 0.5);
-	}
-
+	if (mat == 1)
+		return _wallColor;
+	else if (mat == 0)
+		return _groundColor;
+	else if (mat == 2)
+		return float3(0.2, 0, 0);
+	else if (mat == 3)
+		return float3(0.1, 0.8, 0.2);
 	return float3(1, 0, 1);
 }
 
@@ -150,7 +181,7 @@ float3 shade(float3 p, float3 ray, int material) {
 	float specular = dot(n, ray);
 
 	float3 color = colorForMaterial(material);
-	float3 specColor = float3(0.3, 0.4, 0.2);
+	float3 specColor = color + float3(0.2, 0.2, 0.2);
 
 	float shadow = softshadow(p, _lightDir, 0.01, 10, 10);
 
@@ -166,7 +197,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float3 ray = computeRay(id.xy);
 	bool hit = false;
 	int material = 0;
-	int farDistance = 1000;
+	int farDistance = 400;
 
 	for (int i = 0; i < ITERATIONS; i++) {
 		float2 distanceMaterial = distanceField(p);
