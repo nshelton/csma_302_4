@@ -289,8 +289,10 @@ MonoBehaviour:
   _threshold: 0.001
   _light: {fileID: 186959332}
   _height: 2.68
-  _width: 5.84
-  _depth: 5.88
+  _doorHeight: 2.68
+  _windowHeight: 2.68
+  _width: 6
+  _depth: 6
 --- !u!20 &2038078204
 Camera:
   m_ObjectHideFlags: 0

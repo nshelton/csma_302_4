@@ -10,6 +10,8 @@ float3 _lightDir;
 float _height;
 float _width;
 float _depth;
+float _doorHeight;
+float _windowHeight;
 
 #define ITERATIONS 500
 
@@ -30,6 +32,12 @@ float sdCapsule(float3 p, float3 a, float3 b, float r)
 	return length(pa - ba * h) - r;
 }
 
+float sdCappedCylinder( float3 p, float h, float r )
+{
+  float2 d = abs(float2(length(p.xz),p.y)) - float2(h,r);
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
 float3 computeRay(uint2 pixel) {
 	float2 uv = pixel / _resolution;
 	uv -= 0.5;
@@ -46,19 +54,248 @@ float2 distanceField(float3 p) {
 	float width = _width;
 	float height = _height;
 	float depth = _depth;
+	float door_height = _doorHeight;
 	float wallThickness = 0.05;
 
-	float wall =     sdBox(p - float3(0, height,  depth / 2), float3(width / 2 + wallThickness, height, wallThickness));
-	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width / 2 + wallThickness, height, wallThickness)));
-	wall = min(wall, sdBox(p - float3(  width/2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
-	wall = min(wall, sdBox(p - float3(-width / 2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+	/*
+		main building
+	*/
 
-	wall = max(wall, -sdBox(p - float3(- width/2, height, depth/4), float3(wallThickness*2, height / 2, depth / 8 )));
-	wall = max(wall, -sdBox(p - float3(- width/2, height, -depth/4), float3(wallThickness*2, height / 2, depth / 8)));
+	//-------------------------------------------------------main building: floor 1-------------------------------------------------------
+	// +z wall
+	float wall =     sdBox(p - float3(0, height, depth*1.5), float3(width + wallThickness, height, wallThickness));
+	// -z wall
+	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width + wallThickness, height, wallThickness)));
+	// +x wall
+	wall = min(wall, sdBox(p - float3(  width, height, depth/2), float3(wallThickness, height, depth + wallThickness)));
+	// -x wall
+	wall = min(wall, sdBox(p - float3(-width, height, depth /2), float3(wallThickness, height, depth + wallThickness)));
+	//-------------------------------------------------------main building: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(0, height*3, depth*1.5), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(0, height*3, -depth / 2), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(  width, height*3, depth/2), float3(wallThickness, height, depth + wallThickness)));
+	wall = min(wall, sdBox(p - float3(-width, height*3, depth /2), float3(wallThickness, height, depth + wallThickness)));
+	//-------------------------------------------------------main building: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(0, height*5, depth*1.5), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(0, height*5, -depth / 2), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(  width, height*5, depth/2), float3(wallThickness, height, depth + wallThickness)));
+	wall = min(wall, sdBox(p - float3(-width, height*5, depth /2), float3(wallThickness, height, depth + wallThickness)));
 
-	wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	/*
+		windows ---> -sdBox are cutouts
+	*/
 
+	//-------------------------------------------------------windows: floor 1-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3(- width, _windowHeight, -depth/4.5), float3(wallThickness*2, _windowHeight / 2, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(- width * 0.75, _windowHeight + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(width * 0.75, _windowHeight + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	//-------------------------------------------------------windows: floor 2-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3(- width, _windowHeight*3, -depth/4.5), float3(wallThickness*2, _windowHeight / 2, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(- width * 0.75, _windowHeight*3 + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(width * 0.75, _windowHeight*3 + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	//-------------------------------------------------------windows: floor 3-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3(- width, _windowHeight*5, -depth/4.5), float3(wallThickness*2, _windowHeight / 2, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(- width * 0.75, _windowHeight*5 + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	wall = max(wall, -sdBox(p - float3(width * 0.75, _windowHeight*5 + _windowHeight/6,  -depth / 2), float3(wallThickness*10, _windowHeight / 3, depth / 8)));
+	
+	/*
+		doorways
+	*/
 
+	//-------------------------------------------------------doorways: floor 1-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3( -width, door_height - door_height/2, depth ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height, depth ), float(1)));
+	wall = max(wall, -sdBox(p - float3( -width, door_height - door_height/2, depth /1.6 ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height, depth /1.6 ), float(1)));
+	wall = max(wall, -sdBox(p - float3(-1.5, door_height - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(-1.5, door_height, -depth/2), float(1.25)));
+	wall = max(wall, -sdBox(p - float3(1.5, door_height - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(1.5, door_height, -depth/2), float(1.25)));
+	//-------------------------------------------------------doorways: floor 2-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3( -width, door_height*3 - door_height/2, depth ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height*3, depth ), float(1)));
+	wall = max(wall, -sdBox(p - float3( -width, door_height*3 - door_height/2, depth /1.6 ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height*3, depth /1.6 ), float(1)));
+	wall = max(wall, -sdBox(p - float3(-1.5, door_height*3 - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(-1.5, door_height*3, -depth/2), float(1.25)));
+	wall = max(wall, -sdBox(p - float3(1.5, door_height*3 - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(1.5, door_height*3, -depth/2), float(1.25)));
+	//-------------------------------------------------------doorways: floor 3-------------------------------------------------------
+	wall = max(wall, -sdBox(p - float3( -width, door_height*5 - door_height/2, depth ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height*5, depth ), float(1)));
+	wall = max(wall, -sdBox(p - float3( -width, door_height*5 - door_height/2, depth /1.6 ), float3(2.5, door_height / 2, wallThickness * 20)));
+	wall = max(wall, -sdSphere(p - float3(-width, door_height*5, depth /1.6 ), float(1)));
+	wall = max(wall, -sdBox(p - float3(-1.5, door_height*5 - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(-1.5, door_height*5, -depth/2), float(1.25)));
+	wall = max(wall, -sdBox(p - float3(1.5, door_height*5 - door_height/2,  -depth / 2), float3(1.25, door_height / 2, wallThickness * 2)));
+	wall = max(wall, -sdSphere(p - float3(1.5, door_height*5, -depth/2), float(1.25)));
+	
+	/*
+		window sills
+	*/
+
+	//-------------------------------------------------------window sills: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , height - height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	// width is back of house, -width is front
+	wall = min(wall, sdBox(p - float3(-width , height + height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 4, depth / 8)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*1.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*1.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*0.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*0.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+	//-------------------------------------------------------window sills: floor 2-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , height*3 - height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	wall = min(wall, sdBox(p - float3(-width , height*3 + height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 4, depth / 8)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*3.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*3.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*2.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*2.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+	//-------------------------------------------------------window sills: floor 3-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , height*5 - height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
+	wall = min(wall, sdBox(p - float3(-width , height*5 + height / 2, -depth / 4.5), float3(wallThickness * 2, wallThickness * 4, depth / 8)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*5.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*5.55, -depth / 2), float3(wallThickness * 10, wallThickness * 4, depth/65)));
+	wall = min(wall, sdBox(p - float3(-width*0.75 , height*4.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+	wall = min(wall, sdBox(p - float3(width*0.75 , height*4.8, -depth / 2), float3(wallThickness * 10, wallThickness * 2, depth/65)));
+
+	/*
+		chimney
+	*/
+
+	//-------------------------------------------------------chimney: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , height*0.1, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.2) + 0.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.3) + 0.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.4) + 0.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.5) + 0.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.6) + 1, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.7) + 1.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.8) + 1.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*0.9) + 1.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , height + 1.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.1) + 2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	//-------------------------------------------------------chimney: floor 2-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , (height*1.2) + 2.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.3) + 2.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.4) + 2.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.5) + 2.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.6) + 3, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.7) + 3.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.8) + 3.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*1.9) + 3.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2) + 3.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.1) + 4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.2) + 4.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	//-------------------------------------------------------chimney: floor 3-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width , (height*2.3) + 4.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.4) + 4.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.5) + 4.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.6) + 5, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.7) + 5.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.8) + 5.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*2.9) + 5.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.0) + 5.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.1) + 6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.2) + 6.2, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.3) + 6.4, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.4) + 6.6, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.5) + 6.8, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	wall = min(wall, sdBox(p - float3(-width , (height*3.6) + 7, depth / 5), float3(wallThickness * 4, wallThickness * 4, depth / 7)));
+	
+	/*
+		balcony
+	*/
+
+	//-------------------------------------------------------balcony: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 18 , 0.3, depth * 0.81 ), float3(wallThickness * 20, wallThickness * 4, depth*0.38)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 0.65, depth * 0.5 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 0.65, depth * 1.12 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 0.65, depth * 0.97 ), float3(wallThickness * 4, wallThickness, depth*0.1)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 0.65, depth * 0.66 ), float3(wallThickness * 4, wallThickness, depth*0.12)));
+
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height/2, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height/2, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height/2, depth*0.82 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height/2, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height/2, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 14, height*0.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*0.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.575), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.625), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.675), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.725), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.9), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*0.95), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*0.4, depth*1.05), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*0.4, depth*1.12), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 15, height*0.4, depth*1.12), float(wallThickness), float(height/4)));
+
+	//-------------------------------------------------------balcony: floor 2-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 18 , height*2 + wallThickness*4, depth * 0.81 ), float3(wallThickness * 20, wallThickness * 3.75, depth*0.38)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 2.65, depth * 0.5 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 2.65, depth * 1.12 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 2.65, depth * 0.97 ), float3(wallThickness * 4, wallThickness, depth*0.1)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 2.65, depth * 0.66 ), float3(wallThickness * 4, wallThickness, depth*0.12)));
+
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height*3 - height*0.55, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*3 - height*0.55, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*3 - height*0.55, depth*0.82 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*3 - height*0.55, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height*3 - height*0.55, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 14, height*2.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*2.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.575), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.625), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.675), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.725), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.9), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*0.95), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*2.4, depth*1.05), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*2.4, depth*1.12), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 15, height*2.4, depth*1.12), float(wallThickness), float(height/4)));
+
+	//-------------------------------------------------------balcony: floor 3-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 18 , height*4 + wallThickness*4, depth * 0.81 ), float3(wallThickness * 20, wallThickness * 3.75, depth*0.38)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 4.65, depth * 0.5 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 17 , height * 4.65, depth * 1.12 ), float3(wallThickness * 7, wallThickness, depth*0.04)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 4.65, depth * 0.97 ), float3(wallThickness * 4, wallThickness, depth*0.1)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height * 4.65, depth * 0.66 ), float3(wallThickness * 4, wallThickness, depth*0.12)));
+
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height*5 - height*0.55, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*5 - height*0.55, depth/2 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*5 - height*0.55, depth*0.82 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 30 , height*5 - height*0.55, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	wall = min(wall, sdBox(p - float3(-width - wallThickness * 4 , height*5 - height*0.55, depth*1.12 ), float3(wallThickness * 6, wallThickness * 18, depth / 20)));
+	
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 14, height*4.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*4.4, depth/2), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.575), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.625), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.675), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.725), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.9), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*0.95), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 30, height*4.4, depth*1.05), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 20, height*4.4, depth*1.12), float(wallThickness), float(height/4)));
+	wall = min(wall, sdCappedCylinder(p - float3(-width - wallThickness * 15, height*4.4, depth*1.12), float(wallThickness), float(height/4)));
+	
+	/*
+		roof
+	*/
+	
+	//-------------------------------------------------------roof: floor 1-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(0, height * 2, depth /2), float3(wallThickness * 123, wallThickness * 3, depth + (wallThickness*4))));
+	wall = min(wall, sdBox(p - float3(0, height * 2 + (wallThickness*5), depth /2), float3(wallThickness * 125, wallThickness * 2, depth + (wallThickness*8))));
+	//-------------------------------------------------------roof: floor 2-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(0, height * 4, depth /2), float3(wallThickness * 123, wallThickness * 3, depth + (wallThickness*4))));
+	wall = min(wall, sdBox(p - float3(0, height * 4 + (wallThickness*5), depth /2), float3(wallThickness * 125, wallThickness * 2, depth + (wallThickness*8))));
+	//-------------------------------------------------------roof: floor 3-------------------------------------------------------
+	wall = min(wall, sdBox(p - float3(0, height * 6, depth /2), float3(wallThickness * 123, wallThickness * 3, depth + (wallThickness*4))));
+	wall = min(wall, sdBox(p - float3(0, height * 6 + (wallThickness*5), depth /2), float3(wallThickness * 125, wallThickness * 2, depth + (wallThickness*8))));
 
 	float d = min(ground, wall);
 
