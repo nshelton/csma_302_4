@@ -66,3 +66,4 @@ Cmd: compileComputeKernel
   error: 1 plat 4 at Raymarcher.compute(259): implicit truncation of vector type
  ok=0 outsize=0
 
+Cmd: shutdown
