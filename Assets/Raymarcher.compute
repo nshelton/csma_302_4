@@ -10,6 +10,9 @@ float3 _lightDir;
 float _height;
 float _width;
 float _depth;
+float _smallDepth;
+float _windowHeight;
+float _windowWidth;
 
 #define ITERATIONS 500
 
@@ -39,6 +42,23 @@ float3 computeRay(uint2 pixel) {
 	return ray.xyz;
 }
 
+float3x3 AngleAxis3x3(float angle, float3 axis)
+{
+    float c, s;
+    sincos(angle, s, c);
+
+    float t = 1 - c;
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+
+    return float3x3(
+        t * x * x + c,      t * x * y - s * z,  t * x * z + s * y,
+        t * x * y + s * z,  t * y * y + c,      t * y * z - s * x,
+        t * x * z - s * y,  t * y * z + s * x,  t * z * z + c
+    );
+}
+
 float2 distanceField(float3 p) {
 	
 	float ground = sdBox(p, float3(1000, 0.1, 1000));
@@ -46,15 +66,52 @@ float2 distanceField(float3 p) {
 	float width = _width;
 	float height = _height;
 	float depth = _depth;
+	float smallDepth = _smallDepth;
+	float windowHeight = _windowHeight;
+	float windowWidth = _windowWidth;
+
 	float wallThickness = 0.05;
 
-
 	//left building
-	float wall =     sdBox(p - float3(-5, height,  depth / 2), float3(width + wallThickness, height, wallThickness));
-	wall = min(wall, sdBox(p - float3(-5, height, -depth / 2), float3(width + wallThickness, height, wallThickness)));
-	wall = min(wall, sdBox(p - float3(width/2, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+
+	//left wall
+	float wall = sdBox(p - float3(0, height, depth / 2), float3(width * 1.5 + wallThickness, height, wallThickness));
+	//right wall
+	wall = min(wall, sdBox(p - float3(0, height, -depth / 2), float3(width * 1.5 + wallThickness, height, wallThickness)));
+	//back wall
+	wall = min(wall, sdBox(p - float3(width * 1.5, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
+	//front wall
 	wall = min(wall, sdBox(p - float3(-width*1.5, height, 0), float3(wallThickness, height, depth / 2 + wallThickness)));
 	
+	float3 pRoofLB = p;
+	float3 pRoofLB2 = p;
+
+	float3 offsetLB = float3(smallDepth, height * 2.45, -1.5 - wallThickness);
+	float3 offsetLB2 = float3(smallDepth, height * 2.45, 1.5 + wallThickness);
+
+	float3x3 rotationLB = AngleAxis3x3(0.75, float3(1, 0, 0));
+	float3x3 rotationLB2 = AngleAxis3x3(-0.75, float3(1, 0, 0));
+
+	pRoofLB.x = abs(pRoofLB.x);
+	pRoofLB = mul(rotationLB, pRoofLB);
+	offsetLB = mul(rotationLB, offsetLB);
+
+	pRoofLB2.x = abs(pRoofLB2.x);
+	pRoofLB2 = mul(rotationLB2, pRoofLB2);
+	offsetLB2 = mul(rotationLB2, offsetLB2);
+
+
+	//ceiling
+	wall = min(wall, sdBox(p - float3(0, height * 2, 0), float3(wallThickness * 302, height / 10, smallDepth / 2 + wallThickness)));
+	//floor
+	wall = min(wall, sdBox(p - float3(0, height / 2.5, 0), float3(wallThickness * 302, height / 10, smallDepth / 2 + wallThickness)));
+	//roof(right)
+	wall = min(wall, sdBox(pRoofLB - offsetLB, float3(wallThickness * 202, height / 90, smallDepth / 2.375 + wallThickness)));
+	//roof(left)
+	wall = min(wall, sdBox(pRoofLB2 - offsetLB2, float3(wallThickness * 202, height /90, smallDepth / 2.375 + wallThickness)));
+
+
+
 	//center building(back)
 
 	//left wall
@@ -66,41 +123,109 @@ float2 distanceField(float3 p) {
 	//front wall
 	wall = min(wall, sdBox(p - float3(-width / 3, height * 2, -12.5), float3(wallThickness, height * 2, depth * 2 + wallThickness)));
 	
+	float3 pRoof = p;
+	float3 offset = float3(0, height * 4.45, -depth * 2.5);
+	float3x3 rotation = AngleAxis3x3(0.4, float3(0, 0, 1));
 
+	pRoof.x = abs(pRoof.x);
+	pRoof = mul(rotation, pRoof);
+	offset = mul(rotation, offset);
 
+	//ceiling
+	wall = min(wall, sdBox(p - float3(-width + 10, height * 4, -12.5), float3(width / 3, wallThickness, height * 3.35)));
+	//floor
+	wall = min(wall, sdBox(p - float3(-width + 10, height / 2.5, -12.5), float3(width / 3, wallThickness, height * 3.35)));
+	//second floor
+	wall = min(wall, sdBox(p - float3(-width + 10, height * 2, -12.5), float3(wallThickness * 66, wallThickness, height * 3.35)));
+	
+	//roof
+	wall = min(wall, sdBox(pRoof - offset, float3(height + wallThickness * 20, wallThickness * 2, wallThickness * 200)));
 
 
 	//right building
 
 	//left wall
-	wall = min(wall, sdBox(p - float3(-5, height, -depth * 4.5), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(0, height, -depth * 4.5), float3(width * 1.5 + wallThickness, height, wallThickness)));
 	//right wall
-	wall = min(wall, sdBox(p - float3(-5, height, -depth * 5.5), float3(width + wallThickness, height, wallThickness)));
+	wall = min(wall, sdBox(p - float3(0, height, -depth * 5.5), float3(width * 1.5 + wallThickness, height, wallThickness)));
 	//back wall
-	wall = min(wall, sdBox(p - float3(width/2, height, -25), float3(wallThickness, height, depth / 2 + wallThickness)));
+	wall = min(wall, sdBox(p - float3(width * 1.5, height, -25), float3(wallThickness, height, smallDepth / 2 + wallThickness)));
 	//front wall
-	wall = min(wall, sdBox(p - float3(-width*1.5, height, -25), float3(wallThickness, height, depth / 2 + wallThickness)));
+	wall = min(wall, sdBox(p - float3(-width*1.5, height, -25), float3(wallThickness, height, smallDepth / 2 + wallThickness)));
+	
+	float3 pRoofRB = p;
+	float3 pRoofRB2 = p;
 
+	float3 offsetRB = float3(smallDepth, height*2.45, -26.5);
+	float3 offsetRB2 = float3(smallDepth, height*2.45, -23.55);
 
+	float3x3 rotationRB = AngleAxis3x3(0.75, float3(1, 0, 0));
+	float3x3 rotationRB2 = AngleAxis3x3(-0.75, float3(1, 0, 0));
 
+	pRoofRB.x = abs(pRoofRB.x);
+	pRoofRB = mul(rotationRB, pRoofRB);
+	offsetRB = mul(rotationRB, offsetRB);
+
+	pRoofRB2.x = abs(pRoofRB2.x);
+	pRoofRB2 = mul(rotationRB2, pRoofRB2);
+	offsetRB2 = mul(rotationRB2, offsetRB2);
+
+	//ceiling
+	wall = min(wall, sdBox(p - float3(0, height * 2, -25), float3(wallThickness * 302, height / 10, smallDepth/2 + wallThickness)));
+	//floor
+	wall = min(wall, sdBox(p - float3(0, height / 2.5, -25), float3(wallThickness * 302, height / 10, smallDepth/2 + wallThickness)));
+	//roof
+	wall = min(wall, sdBox(pRoofRB - offsetRB, float3(wallThickness * 202, height / 90, smallDepth / 2.5 + wallThickness)));
+	wall = min(wall, sdBox(pRoofRB2 - offsetRB2, float3(wallThickness * 202, height / 90, smallDepth / 2.5 + wallThickness)));
 
 
 
 	//left windows
-	wall = max(wall, -sdBox(p - float3(5 - width /5, height, depth), float3(wallThickness*1000, height / 2, depth/ 2)));
 	
+	//doorway
 	wall = max(wall, -sdBox(p - float3(- width/2 + 5, height, -depth/1.5), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, -depth/4), float3(wallThickness*10, height / 2, depth)));
-	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, -depth/4), float3(wallThickness*10, height / 2, depth)));	
+	
+	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+
+	wall = max(wall, -sdBox(p - float3(width/2 - 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 1, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 3, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 5, height, depth/4), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 7, height, depth/4), float3(wallThickness*10, height / 3, depth)));	
 	//right windows
 	
+	//doorway
+	
+	wall = max(wall, -sdBox(p - float3(- width/2 + 5, height, -depth * 4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 + 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 3, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 5, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(- width/2 - 7, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+
+	wall = max(wall, -sdBox(p - float3(width/2 - 5, height, -depth * 4), float3(wallThickness*10, height / 2, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 - 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 1, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 3, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 5, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));
+	wall = max(wall, -sdBox(p - float3(width/2 + 7, height, -depth * 5), float3(wallThickness*10, height / 3, depth)));		
 
 	//wall = min(wall, sdBox(p - float3(-width / 2, height - height / 2, -depth / 4), float3(wallThickness * 2, wallThickness * 2, depth / 8)));
 	
-	
+	//main building windows(bottom story)
+	wall = max(wall, -sdBox(p - float3(0, windowHeight, -depth * 4), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight, -depth * 3), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight, -depth * 2), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight, -depth), float3(depth, windowHeight / 3, windowWidth)));
+	//main building windows(top story)
+	wall = max(wall, -sdBox(p - float3(0, windowHeight * 3, -depth * 4), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight * 3, -depth * 3), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight * 3, -depth * 2), float3(depth, windowHeight / 3, windowWidth)));
+	wall = max(wall, -sdBox(p - float3(0, windowHeight * 3, -depth), float3(depth, windowHeight / 3, windowWidth)));
 
 
 	float d = min(ground, wall);

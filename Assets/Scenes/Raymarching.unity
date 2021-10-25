@@ -294,6 +294,9 @@ MonoBehaviour:
   _height: 3
   _width: 10
   _depth: 5
+  _smallDepth: 5
+  _windowHeight: 3
+  _windowWidth: 0
 --- !u!20 &2038078204
 Camera:
   m_ObjectHideFlags: 0
